@@ -9,7 +9,7 @@ import java.util.Queue;
  * Encapsulates a queue that holds messages being sent to a specific <code>Actor</code> instance registered
  * to an <code>ActorSystem</code>.
  */
-public class Mailbox<T, R> {
+public class Mailbox<T> {
     private Queue<Envelope<T>> queue = new LinkedList<>();
 
     Mailbox() {

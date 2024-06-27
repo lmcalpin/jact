@@ -25,7 +25,7 @@ public abstract class Actor<T, R> implements ActorBehavior<T, R> {
     private String name;
     private ActorSystem actorSystem;
     private LocalActorRef<T, R> self;
-    private Mailbox<T, R> mailbox;
+    private Mailbox<T> mailbox;
     private ActorProcessor<T, R> actorProcessor;
 
     public Actor() {
@@ -138,7 +138,7 @@ public abstract class Actor<T, R> implements ActorBehavior<T, R> {
         return mailbox.hasMail();
     }
 
-    Mailbox<T, R> getMailbox() {
+    Mailbox<T> getMailbox() {
         return mailbox;
     }
 

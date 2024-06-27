@@ -1,10 +1,12 @@
 package com.metatrope.jact.dispatcher;
 
 import com.metatrope.jact.ActorSystem;
+import com.metatrope.jact.config.Config;
 import com.metatrope.jact.exceptions.ActorException;
 import com.metatrope.jact.message.Envelope;
 import com.metatrope.jact.message.MessageType;
 import com.metatrope.jact.queue.BlockingMessageQueue;
+import com.metatrope.jact.queue.MessageQueue;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,23 +18,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class LocalDispatcher extends ReplyDispatcher<BlockingMessageQueue> {
+public class LocalDispatcher extends ReplyDispatcher<MessageQueue> {
     private static final Logger logger = LogManager.getLogger(LocalDispatcher.class);
 
     private final ActorSystem actorSystem;
     private final AtomicBoolean stopped = new AtomicBoolean();
     private final ExecutorService executorService;
-    private final Map<String, Mailbox<?, ?>> mailboxes = new ConcurrentHashMap<>();
+    private final Map<String, Mailbox<?>> mailboxes = new ConcurrentHashMap<>();
+    private final Config config;
 
-    public LocalDispatcher(ActorSystem actorSystem) {
+    public LocalDispatcher(ActorSystem actorSystem, Config config) {
         super(new BlockingMessageQueue());
+        this.config = config;
         this.actorSystem = actorSystem;
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.executorService.submit(this::dispatcherLoop);
     }
 
-    public <T, R> Mailbox<T, R> register(String name) {
-        Mailbox<T, R> mailbox = new Mailbox<T, R>();
+    public <T> Mailbox<T> register(String name) {
+        Mailbox<T> mailbox = new Mailbox<T>();
         mailboxes.put(name, mailbox);
         return mailbox;
     }
@@ -51,7 +55,7 @@ public class LocalDispatcher extends ReplyDispatcher<BlockingMessageQueue> {
                     super.deliverReply(envelope);
                 } else {
                     logger.trace("{} == DELIVERED == {}", actorSystem.getName(), envelope);
-                    Mailbox<?, ?> mailbox = mailboxes.get(envelope.getReceiverId());
+                    Mailbox<?> mailbox = mailboxes.get(envelope.getReceiverId());
                     if (mailbox == null) {
                         logger.error("{} == MISSING MAILBOX {}", actorSystem.getName(), envelope.getReceiverId());
                         System.exit(-1);

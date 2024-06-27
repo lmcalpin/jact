@@ -63,7 +63,7 @@ public class ActorSystem implements Closeable {
         String name = UUID.randomUUID().toString();
         this.friendlyName = friendlyName != null ? friendlyName : name;
         this.config = config;
-        this.localDispatcher = new LocalDispatcher(this);
+        this.localDispatcher = new LocalDispatcher(this, config);
         this.actorProcessingExecutorService = Executors.newVirtualThreadPerTaskExecutor();
         this.actorProcessingExecutorService.submit(this::processingLoop);
         ServerConfig remotingConfig = config.getRemotingConfiguration();
